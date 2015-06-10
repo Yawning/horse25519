@@ -2,7 +2,15 @@
 #include <openssl/sha.h>
 
 #include <assert.h>
-#include <endian.h> /* Linux-ism fuck yeah. */
+
+#ifndef __MACH__
+#  include <endian.h> /* Linux-ism fuck yeah. */
+#else
+#  include <libkern/OSByteOrder.h>
+#  define htobe64(x) OSSwapHostToBigInt64(x)
+#  define htole64(x) OSSwapHostToLittleInt64(x)
+#endif
+
 #include <getopt.h>
 #include <limits.h>
 #include <pthread.h>
