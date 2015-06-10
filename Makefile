@@ -1,4 +1,4 @@
-CFLAGS := -O2 -g -Wall -Werror -Wextra -I./src -DNDEBUG
+CFLAGS := -O2 -g -Wall -Werror -Wno-error=deprecated-declarations -Wextra -I./src -DNDEBUG
 LDFLAGS := -lcrypto -lpthread
 
 SRCS = src/ref10/fe_0.c \
