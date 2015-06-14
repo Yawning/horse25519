@@ -49,7 +49,7 @@ static inline int bitprefix_matches(const bitprefix *v, const uint8_t *buf,
                                     size_t len);
 
 static void usage(const char *execname);
-static void random_32bytes(uint8_t *buf);
+static void random_64bytes(uint8_t *buf);
 static void scalar_add(uint8_t r[32], const uint8_t x[32], const uint8_t y[32]);
 static void *search_worker(void *arg);
 static void test_signature(const uint8_t sk[32], const uint8_t pk[32]);
@@ -140,7 +140,7 @@ usage(const char *execname)
 }
 
 static void
-random_32bytes(uint8_t *buf)
+random_64bytes(uint8_t *buf)
 {
   uint8_t az[64];
 
@@ -149,7 +149,7 @@ random_32bytes(uint8_t *buf)
   RAND_bytes(buf, 32);
   pthread_mutex_unlock(&rng_lock);
   crypto_hash_sha512(az, buf, 32);
-  memcpy(buf, az, 32);
+  memcpy(buf, az, 64);
 }
 
 static void
@@ -188,7 +188,8 @@ search_worker(void *arg)
 
  regenerate:
   /* Generate the keypair. */
-  random_32bytes(sk_base);
+  random_64bytes(sk);
+  memcpy(sk_base, sk, 32);
   sk_base[0] &= 248;
   sk_base[31] &= 63;
   sk_base[31] |= 64;
@@ -234,7 +235,6 @@ search_worker(void *arg)
        */
       memcpy(sk_fixup, &incr_le, sizeof(incr_le));
       scalar_add(sk, sk_base, sk_fixup);
-      memcpy(sk + 32, pk, sizeof(pk)); /* Append the public key. */
       if (((sk[0] & 248) == sk[0]) && (((sk[31] & 63) | 64) == sk[31])) {
         /* These operations should be a no-op. */
         sk[0] &= 248;
@@ -297,7 +297,6 @@ search_worker(void *arg)
 static void
 test_signature(const uint8_t sk[64], const uint8_t pk[32])
 {
-#if 0
   uint8_t m[256];
   uint8_t sm[64 + 256];
   unsigned long long smlen, mlen = sizeof(m);
@@ -307,21 +306,11 @@ test_signature(const uint8_t sk[64], const uint8_t pk[32])
   /* Sign a test message. */
   for (i = 0; i < mlen; i++)
     m[i] = i;
-  crypto_sign(sm, &smlen, m, mlen, sk);
+  crypto_sign(sm, &smlen, m, mlen, sk, pk);
 
   /* Verify the signature. */
   ret = crypto_sign_open(m, &mlen, sm, smlen, pk);
   fprintf(stdout, "Test signature verification returned: %d\n", ret);
-#else
-  (void)sk;
-  (void)pk;
-
-  /* This fails for some reason, I either screwed up, or I'm not calling the
-   * ref10 code correctly.  In the ref10 code, the last 32 bytes of az are
-   * getting over written with the public key, so I'm fairly sure I'm doing
-   * things correctly here...
-   */
-#endif
 }
 
 int
