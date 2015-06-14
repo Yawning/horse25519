@@ -37,7 +37,10 @@ SRCS = src/ref10/fe_0.c \
 	src/ref10/ge_tobytes.c \
 	src/ref10/sc_muladd.c \
 	src/ref10/sc_reduce.c \
+	src/ref10/sign.c \
+	src/ref10/open.c \
 	src/crypto_verify_32.c \
+	src/crypto_hash_sha512.c \
 	src/base32.c \
 	src/horse25519.c
 

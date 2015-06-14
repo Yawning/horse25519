@@ -18,7 +18,17 @@ int crypto_sign(
 
   memmove(pk,sk + 32,32);
 
+#if 0
   crypto_hash_sha512(az,sk,32);
+#else
+  /* horse25519: We're doing ECC trickery to generate a private key that
+   * matches a public key, so the SHA512 step here, messes things up.
+   *
+   * This matches the way Tor integrates the ed25519 code, see:
+   *  src/ext/ed25519/ref10/sign.c
+   */
+  memcpy(az, sk, 32);
+#endif
   az[0] &= 248;
   az[31] &= 63;
   az[31] |= 64;
