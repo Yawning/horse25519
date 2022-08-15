@@ -1,11 +1,8 @@
 /*
  * horse25519.c - Ed25519 vanity key generator.
- * Copryright (C) 2014 Yawning Angel.
+ * Copyright (C) 2014 Yawning Angel.
  *
- * This work is licensed under the Creative Commons Attribution-NonCommercial-
- * NoDerivatives 4.0 International License. To view a copy of this license,
- * visit http://creativecommons.org/licenses/by-nc-nd/4.0/ or send a letter to
- * Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+ * This is free and unencumbered software released into the public domain.
  */
 
 #include <openssl/rand.h>
@@ -62,7 +59,7 @@ static void usage(const char *execname);
 static void random_64bytes(uint8_t *buf);
 static void scalar_add(uint8_t r[32], const uint8_t x[32], const uint8_t y[32]);
 static void *search_worker(void *arg);
-static void test_signature(const uint8_t sk[32], const uint8_t pk[32]);
+static void test_signature(const uint8_t sk[64], const uint8_t pk[32]);
 
 static pthread_mutex_t rng_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_rwlock_t result_lock = PTHREAD_RWLOCK_INITIALIZER;
@@ -284,7 +281,7 @@ search_worker(void *arg)
       char *public_key = base32_encode(pk, sizeof(pk));
       char *private_key = base32_encode(sk, sizeof(sk));
 
-      fprintf(stdout, "Private Key: %s\n", private_key);
+      fprintf(stdout, "Expanded Private Key: %s\n", private_key);
       fprintf(stdout, "Public  Key: %s\n", public_key);
 
       result_found = 1;
@@ -316,7 +313,7 @@ test_signature(const uint8_t sk[64], const uint8_t pk[32])
   /* Sign a test message. */
   for (i = 0; i < mlen; i++)
     m[i] = i;
-  crypto_sign(sm, &smlen, m, mlen, sk, pk);
+  crypto_sign(sm, &smlen, m, mlen, sk);
 
   /* Verify the signature. */
   ret = crypto_sign_open(m, &mlen, sm, smlen, pk);

@@ -4,7 +4,7 @@
 int crypto_sign(
   unsigned char *sm,unsigned long long *smlen,
   const unsigned char *m,unsigned long long mlen,
-  const unsigned char *sk,const unsigned char *pk
+  const unsigned char *sk
 );
 
 int crypto_sign_open(
